@@ -14,7 +14,7 @@ const createSendToken = (user, req, res) => {
   if (process.env.NODE_ENV == "production") cookieOPtions.secure = true;
 
   res.cookie("jwt", token, cookieOPtions);
-
+  console.log(user);
   //redirect to elections page
   res.redirect("/");
 };

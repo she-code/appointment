@@ -14,13 +14,15 @@ dotenv.config({ path: "./config.env" });
 
 //import files
 const authenticateJwt = require("./middelwares/authenticate");
+const userRoute = require("./routes/userRoute");
+const appointmentRoute = require("./routes/appointmentRoute");
 //parse jsom
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.SESSION_SECRET));
-
+app.use(cors());
 //initialize session
 app.use(
   session({
@@ -36,7 +38,7 @@ app.use((req, res, next) => {
   console.log(process.env.NODE_ENV);
   next();
 });
-app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
+//app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
 
 app.use(flash());
 app.use(function (request, response, next) {
@@ -49,14 +51,15 @@ app.set("view engine", "ejs");
 
 //render views
 app.get("/", authenticateJwt, async (req, res) => {
-  //check this logic
-  console.log(req.user);
-  if (req.user != null) {
-    res.redirect("/login");
-  } else {
+  if (req.accepts("html")) {
     res.render("index", {
       title: "Online Appointment Platform",
-      csrfToken: req.csrfToken(),
+      //csrfToken: req.csrfToken(),
+    });
+  } else {
+    res.json({
+      user: "user",
+      //csrfToken: req.csrfToken(),
     });
   }
 });
@@ -73,4 +76,8 @@ app.get("/login", (request, response) => {
     csrfToken: request.csrfToken(),
   });
 });
+
+app.use("/users", userRoute);
+app.use("/appointemnts", authenticateJwt, appointmentRoute);
+
 module.exports = app;
