@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Appointment extends Model {
     /**
@@ -14,14 +14,74 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
     }
+    static async getAllApointments(userId) {
+      return this.findAll({ where: { userId } });
+    }
+    static deleteAppointment(id, userId) {
+      return this.destroy({
+        where: {
+          id,
+          userId,
+        },
+      });
+    }
+    static getCurrentDateAppointments(currentUser, START, currentDate) {
+      return this.findAll({
+        where: {
+          [Op.and]: [
+            {
+              userId: currentUser,
+            },
+            {
+              createdAt: {
+                [Op.between]: [START.toISOString(), currentDate.toISOString()],
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    updateAppointment(title, description) {
+      return this.update({ title, description }, { new: true });
+    }
+
+    static async getAppointmentByUser(id, userId) {
+      return this.findOne({ id, userId });
+    }
   }
   Appointment.init(
     {
-      title: DataTypes.STRING,
+      title: {
+        type: DataTypes.STRING,
+        required: true,
+        validate: {
+          notEmpty: true,
+          len: 2,
+        },
+      },
       description: DataTypes.STRING,
-      date: DataTypes.DATE,
-      from: DataTypes.STRING,
-      to: DataTypes.STRING,
+      date: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
+      },
+      from: {
+        type: DataTypes.TIME,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
+      },
+      to: {
+        type: DataTypes.TIME,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
+      },
     },
     {
       sequelize,

@@ -1,0 +1,6 @@
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+    <%if(appointemnts.length>0){%>
+        <%for(var i = 0;i<appointemnts.length;i++){%>
+        <p><%=appointments[i].id%> yes</p>
+        <%}%>
+        <%}%>

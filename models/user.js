@@ -17,10 +17,52 @@ module.exports = (sequelize, DataTypes) => {
   }
   User.init(
     {
-      firstName: DataTypes.STRING,
-      lastName: DataTypes.STRING,
-      email: DataTypes.STRING,
-      password: DataTypes.STRING,
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          len: 2,
+        },
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          len: 2,
+        },
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+          notNull: true,
+          isEmail: true,
+          isUnique: (value, next) => {
+            User.findAll({
+              where: { email: value },
+              attributes: ["id"],
+            })
+              .then((user) => {
+                if (user.length != 0)
+                  next(new Error("Email address already in use!"));
+                next();
+              })
+              .catch((onError) => console.log(onError));
+          },
+        },
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+          len: 8,
+        },
+      },
     },
     {
       sequelize,

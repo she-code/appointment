@@ -16,6 +16,7 @@ dotenv.config({ path: "./config.env" });
 const authenticateJwt = require("./middelwares/authenticate");
 const userRoute = require("./routes/userRoute");
 const appointmentRoute = require("./routes/appointmentRoute");
+const appointController = require("./controllers/appointmentController");
 //parse jsom
 app.use(bodyParser.json());
 app.use(express.json());
@@ -38,7 +39,7 @@ app.use((req, res, next) => {
   console.log(process.env.NODE_ENV);
   next();
 });
-//app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
+app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
 
 app.use(flash());
 app.use(function (request, response, next) {
@@ -50,19 +51,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 //render views
-app.get("/", authenticateJwt, async (req, res) => {
-  if (req.accepts("html")) {
-    res.render("index", {
-      title: "Online Appointment Platform",
-      //csrfToken: req.csrfToken(),
-    });
-  } else {
-    res.json({
-      user: "user",
-      //csrfToken: req.csrfToken(),
-    });
-  }
-});
+app.get("/", authenticateJwt, appointController.getCurrentDateAppointments);
 
 app.get("/signup", (request, response) => {
   response.render("signup", {
