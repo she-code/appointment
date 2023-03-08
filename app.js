@@ -1,6 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const path = require("path");
+const flash = require("connect-flash");
+const session = require("express-session");
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const csurf = require("tiny-csrf");
 const dotenv = require("dotenv");
@@ -8,12 +12,65 @@ const dotenv = require("dotenv");
 const app = express();
 dotenv.config({ path: "./config.env" });
 
-app.use(cors());
-app.use(morgan("dev"));
-app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
+//import files
+const authenticateJwt = require("./middelwares/authenticate");
+//parse jsom
+app.use(bodyParser.json());
 app.use(express.json());
+app.use(morgan("dev"));
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser(process.env.SESSION_SECRET));
 
-app.use("/", (req, res) => {
-  res.send("Welcome");
+//initialize session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+    },
+  })
+);
+app.use((req, res, next) => {
+  console.log("cookie", req.cookies);
+  console.log(process.env.NODE_ENV);
+  next();
+});
+app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
+
+app.use(flash());
+app.use(function (request, response, next) {
+  response.locals.messages = request.flash();
+  next();
+});
+//set default view engine
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+//render views
+app.get("/", authenticateJwt, async (req, res) => {
+  //check this logic
+  console.log(req.user);
+  if (req.user != null) {
+    res.redirect("/login");
+  } else {
+    res.render("index", {
+      title: "Online Appointment Platform",
+      csrfToken: req.csrfToken(),
+    });
+  }
+});
+
+app.get("/signup", (request, response) => {
+  response.render("signup", {
+    title: "Sign Up",
+    csrfToken: request.csrfToken(),
+  });
+});
+app.get("/login", (request, response) => {
+  response.render("login", {
+    title: "Login",
+    csrfToken: request.csrfToken(),
+  });
 });
 module.exports = app;
