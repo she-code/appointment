@@ -39,7 +39,7 @@ app.use((req, res, next) => {
   console.log(process.env.NODE_ENV);
   next();
 });
-app.use(csurf(process.env.CSURF_SECRET, ["POST", "PUT", "DELETE"]));
+app.use(csurf(process.env.CSURF_SECRET, ["PUT", "DELETE", "PATCH"]));
 
 app.use(flash());
 app.use(function (request, response, next) {
@@ -65,7 +65,12 @@ app.get("/login", (request, response) => {
     csrfToken: request.csrfToken(),
   });
 });
-
+app.get("/addAppoinment", (request, response) => {
+  response.render("addAppointment", {
+    title: "Add Appointment",
+    csrfToken: request.csrfToken(),
+  });
+});
 app.use("/users", userRoute);
 app.use("/appointemnts", authenticateJwt, appointmentRoute);
 

@@ -47,7 +47,11 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async getAppointmentByUser(id, userId) {
-      return this.findOne({ id, userId });
+      return this.findOne({ where: { id, userId } });
+    }
+
+    static async getAppointmentDetails(userId, id) {
+      return this.findOne({ where: { userId, id } });
     }
   }
   Appointment.init(

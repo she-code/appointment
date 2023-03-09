@@ -34,33 +34,31 @@ exports.createAppointment = async (req, res, next) => {
     //create option to delete and add the new one
     //fetch the appointments near to that time range
     // suggest the nearest time range
-    const { title, description, to, from, stringDate } = req.body;
-    const currentUser = req.user;
-    const date = parse(stringDate, "MM-dd-yyyy", new Date());
-    const toDb = parse(to, "hh:m:ss", new Date());
-    const fromDb = parse(from, "hh:m:ss", new Date());
+    const { title, description, to, from, date } = req.body;
+    const userId = req.user;
 
-    console.log(req.body, currentUser, date);
-
-    console.log(toDb.getHours()); // 9
-    console.log(toDb.getDate()); // 15
-    console.log(toDb, fromDb); // 2022-06-15T08:13:50.000Z
-
-    const appointment = await Appointment.create({
-      title,
-      description,
-      userId: currentUser,
-      to,
-      from,
-      date,
+    //check if an appointment exists at that time
+    const appointExists = await Appointment.findAll({
+      where: { userId, date, [Op.between]: [{ from }, { to }] },
     });
-    console.log(req.body, currentUser, appointment);
-    if (!appointment) {
-      return next(new AppError("Unable to create election", 401));
-    }
-    res.redirect("/");
+
+    console.log(appointExists);
+    res.send(appointExists);
+    // const appointment = await Appointment.create({
+    //   title,
+    //   description,
+    //   userId,
+    //   to,
+    //   from,
+    //   date,
+    // });
+    // console.log(req.body, userId, appointment);
+    // if (!appointment) {
+    //   return next(new AppError("Unable to create election", 401));
+    // }
+    // res.redirect("/");
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.send(error.message);
   }
 };
@@ -77,30 +75,30 @@ exports.getCurrentDateAppointments = async (req, res) => {
     const START = new Date();
     START.setHours(0, 0, 0, 0);
 
-    const appointemnts = await Appointment.getCurrentDateAppointments(
+    const appointments = await Appointment.getCurrentDateAppointments(
       currentUser,
       START,
       currentDate
     );
 
-    if (!appointemnts) {
+    if (!appointments) {
       res.send("unable to find");
     }
-    var array = _.groupBy(appointemnts, groups["forHour"]);
-    console.log(appointemnts);
+    var array = _.groupBy(appointments, groups["forHour"]);
+    console.log(appointments);
 
-    //res.send(appointemnts);
+    //res.send(appointments);
     if (req.accepts("html")) {
       res.render("index", {
         title: "Online Appointment Platform",
         csrfToken: req.csrfToken(),
-        appointemnts,
+        appointments,
       });
     } else {
       res.json({
         user: "user",
         csrfToken: req.csrfToken(),
-        appointemnts,
+        appointments,
       });
     }
     // res.send(appointemnts);
@@ -149,5 +147,27 @@ exports.updateAppointments = async (req, res, next) => {
   } catch (error) {
     console.log(error.message);
     res.json(error.message);
+  }
+};
+
+//edit election page
+exports.renderUpdateAppointmentPage = async (request, response, next) => {
+  const id = request.params.id;
+  const loggedInUser = request.user;
+  const appointment = await Appointment.getAppointmentDetails(loggedInUser, id);
+  if (!appointment) {
+    return next(new AppError("No appointment found with that id", 404));
+  }
+
+  if (request.accepts("html")) {
+    response.render("editAppointmentPage", {
+      title: "Update Appointment",
+      appointment,
+      csrfToken: request.csrfToken(),
+    });
+  } else {
+    response.json({
+      appointment,
+    });
   }
 };
