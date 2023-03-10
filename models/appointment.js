@@ -17,6 +17,23 @@ module.exports = (sequelize, DataTypes) => {
     static async getAllApointments(userId) {
       return this.findAll({ where: { userId } });
     }
+    static async createAppointment({
+      userId,
+      date,
+      title,
+      description,
+      from,
+      to,
+    }) {
+      return this.create({
+        userId,
+        title,
+        description,
+        date,
+        from,
+        to,
+      });
+    }
     static deleteAppointment(id, userId) {
       return this.destroy({
         where: {

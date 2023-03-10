@@ -28,6 +28,8 @@ app.use(cors());
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       secure: false,
@@ -65,12 +67,7 @@ app.get("/login", (request, response) => {
     csrfToken: request.csrfToken(),
   });
 });
-app.get("/addAppoinment", (request, response) => {
-  response.render("addAppointment", {
-    title: "Add Appointment",
-    csrfToken: request.csrfToken(),
-  });
-});
+
 app.use("/users", userRoute);
 app.use("/appointemnts", authenticateJwt, appointmentRoute);
 

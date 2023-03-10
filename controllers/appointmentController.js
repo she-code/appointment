@@ -1,32 +1,34 @@
-const { parse } = require("date-fns");
+const { parse, format } = require("date-fns");
 const { Appointment } = require("../models");
 const AppError = require("../utils/AppError");
 const { Op } = require("sequelize");
-const _ = require("lodash");
-const groups = (() => {
-  const byDay = (item) => parse(item.createdAt, "MM-dd-yyyy", new Date()),
-    forHour = (item) =>
-      byDay(item) + " " + parse(item.createdAt, "hh a", new Date()),
-    by6Hour = (item) => {
-      const m = parse(item.createdAt);
-      return (
-        byDay(item) +
-        " " +
-        ["first", "second", "third", "fourth"][Number(m.format("k")) % 6] +
-        " 6 hours"
-      );
-    },
-    forMonth = (item) => parse(item.createdAt, "MMM YYYY", new Date()),
-    forWeek = (item) =>
-      forMonth(item) + " " + parse(item.createdAt, "ww", new Date());
-  return {
-    byDay,
-    forHour,
-    by6Hour,
-    forMonth,
-    forWeek,
-  };
-})();
+const sequelize = require("sequelize");
+// const _ = require("lodash");
+
+// const groups = (() => {
+//   const byDay = (item) => parse(item.createdAt, "MM-dd-yyyy", new Date()),
+//     forHour = (item) =>
+//       byDay(item) + " " + parse(item.createdAt, "hh a", new Date()),
+//     by6Hour = (item) => {
+//       const m = parse(item.createdAt);
+//       return (
+//         byDay(item) +
+//         " " +
+//         ["first", "second", "third", "fourth"][Number(m.format("k")) % 6] +
+//         " 6 hours"
+//       );
+//     },
+//     forMonth = (item) => parse(item.createdAt, "MMM YYYY", new Date()),
+//     forWeek = (item) =>
+//       forMonth(item) + " " + parse(item.createdAt, "ww", new Date());
+//   return {
+//     byDay,
+//     forHour,
+//     by6Hour,
+//     forMonth,
+//     forWeek,
+//   };
+// })();
 exports.createAppointment = async (req, res, next) => {
   try {
     //fetch the appointments on that day
@@ -36,27 +38,52 @@ exports.createAppointment = async (req, res, next) => {
     // suggest the nearest time range
     const { title, description, to, from, date } = req.body;
     const userId = req.user;
-
-    //check if an appointment exists at that time
+    console.log(to.toString(), from, date);
+    // [Op.between]: [
+    //   { from: { [Op.gte]: sequelize.literal(`TIME '${from}'`) } },
+    //   { to: { [Op.lte]: sequelize.literal(`TIME '${to}'`) } },
+    // ],
     const appointExists = await Appointment.findAll({
-      where: { userId, date, [Op.between]: [{ from }, { to }] },
+      where: {
+        userId,
+        date: new Date(date),
+        [Op.and]: [
+          {
+            from: {
+              [Op.gte]: from,
+            },
+          },
+          {
+            to: {
+              [Op.lte]: to,
+            },
+          },
+        ],
+      },
+      raw: true,
     });
 
-    console.log(appointExists);
-    res.send(appointExists);
-    // const appointment = await Appointment.create({
-    //   title,
-    //   description,
-    //   userId,
-    //   to,
-    //   from,
-    //   date,
-    // });
-    // console.log(req.body, userId, appointment);
-    // if (!appointment) {
-    //   return next(new AppError("Unable to create election", 401));
-    // }
-    // res.redirect("/");
+    if (appointExists.length > 0) {
+      console.log("existing", appointExists);
+      req.session.existingData = appointExists;
+      req.flash(
+        "error",
+        "Appointments exist in the given time slot. You can view and delete existing appointments."
+      );
+      return res.redirect("/appointemnts/addAppoinment");
+      // return res.json(appointExists);
+    } else {
+      const appointment = await Appointment.createAppointment({
+        userId,
+        date,
+        title,
+        description,
+        from,
+        to,
+      });
+      console.log(appointment, "created");
+      return res.redirect("/");
+    }
   } catch (error) {
     console.log(error);
     res.send(error.message);
@@ -84,8 +111,8 @@ exports.getCurrentDateAppointments = async (req, res) => {
     if (!appointments) {
       res.send("unable to find");
     }
-    var array = _.groupBy(appointments, groups["forHour"]);
-    console.log(appointments);
+    // var array = _.groupBy(appointments, groups["forHour"]);
+    // console.log(appointments);
 
     //res.send(appointments);
     if (req.accepts("html")) {
@@ -170,4 +197,35 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
       appointment,
     });
   }
+};
+
+exports.renderAddAppointmentPage = async (request, response) => {
+  const existingData = response.locals.existingData ?? [];
+  for (const obj of existingData) {
+    for (const [key, value] of Object.entries(obj)) {
+      console.log(key, value);
+    }
+  }
+  console.log(existingData.length, "length");
+  if (request.accepts("html")) {
+    response.render("addAppointment", {
+      title: "Add Appointment",
+      existingData,
+      csrfToken: request.csrfToken(),
+    });
+  } else {
+    response.json({
+      existingData,
+    });
+  }
+};
+exports.getAllAppointments = async (req, res) => {
+  const userId = req.user;
+  const appoints = await Appointment.findAll({
+    where: {
+      userId,
+    },
+    order: [["createdAt", "DESC"]],
+  });
+  res.json(appoints);
 };
