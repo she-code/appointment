@@ -12,65 +12,68 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-       
-		function deleteAppointment(id) {
-			var result = confirm("Are you sure?")
-			if (result) {
-				// const confilrm =  document.getElementById("confirmDelete").value
-				fetch(`/appointemnts/${id}`, {
-					method: 'delete',
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						_csrf: token
-					})
-				}).then((res) => {
-					if (res.ok) {
-						window.location.reload();
-					}
-				}).catch((err) => console.log(err))
-			}
 
-		}
+        function deleteAppointment(id) {
+            var result = confirm("Are you sure?")
+            if (result) {
+                // const confilrm =  document.getElementById("confirmDelete").value
+                fetch(`/appointments/${id}`, {
+                    method: 'delete',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        _csrf: token
+                    })
+                }).then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                        //window.location.href = "/appointments/addAppoinment";
+
+                    }
+                }).catch((err) => console.log(err))
+            }
+
+        }
     </script>
 </head>
 
 <body>
     <main class=" h-screen pt-10" style="background-color: #6c6c7f24; ">
-        <div class="  sm:container mx-auto p-10 bg-white shadow-lg rounded-md pt-7"
-            style="  height: max-content; ">
+        <div class="  sm:container mx-auto p-10 bg-white shadow-lg rounded-md pt-7" style="  height: max-content; ">
             <div class="mx-auto">
                 <div class="p-8 mx-auto flex flex-col align-center justify-center" style="width: 500px;">
                     <h1 class="text-gray-600 text-2xl font-semibold text-center">Add Appointment</h1>
-                    <form id="add_appointment" class="form" method="post" action="/appointemnts/createAppointment"
+                    <form id="add_appointment" class="form" method="post" action="/appointments/createAppointment"
                         onsubmit="submit_btn.disabled = true; return true;">
                         <input type="hidden" name="_csrf" value="<%=csrfToken%>" id="_csrf" />
                         <input type="hidden" name="appointmentId" id="appointmentId" />
                         <div class="p-3">
                             <label for="title" class="text-gray-600 text-lg py-2">Title</label>
                             <input type="text" name="title" id="title" required minlength="2"
+                                value="<%=formData.title%>"
                                 class="border border-gray-300 text-gray-900 rounded p-2 w-full mt-2 focus:border-green-200" />
                         </div>
                         <div class="p-3">
                             <label for="description" class="text-gray-600 text-lg py-2">Description</label>
                             <input type="text" name="description" id="description" required minlength="2"
+                                value="<%=formData.description%>"
                                 class="border border-gray-300 text-gray-900 rounded p-2 w-full mt-2" />
                         </div>
                         <div class="p-3">
                             <%var minLength=new Date().toISOString().split('T')[0] %>
                                 <label for="date" class="text-gray-600 text-lg py-2">Date</label>
-                                <input type="date" name="date" id="date" required minlength="2" min=<%=minLength%>
+                                <input type="date" name="date" id="date" value="<%=formData.date%>" required min=<%=minLength%> 
                                 class="border border-gray-300 text-gray-900 rounded p-2 w-full mt-2"
                                 />
                         </div>
                         <div class="p-3 flex justify-between">
                             <div>
                                 <label for="from" class="text-gray-600 text-lg py-2 mr-2">From:</label>
-                                <input type="time" name="from" id="from" required minlength="2"
+                                <input type="time" name="from" id="from" required value="<%=formData.from%>"
                                     class="border border-gray-300 text-gray-900 rounded p-2 focus:outline-none mt-2" />
                             </div>
                             <div>
                                 <label for="to" class="text-gray-600 text-lg py-2 mr-2">To:</label>
-                                <input type="time" name="to" id="to" required minlength="2"
+                                <input type="time" name="to" id="to" required value="<%=formData.to%>"
                                     class="border border-gray-300 text-gray-900 rounded p-2  mt-2 focus:outline-none" />
                             </div>
                         </div>
@@ -113,22 +116,30 @@
                                             </td>
                                             <td class="p-1">
                                                 <div class="flex justify-between ">
-                                                   
-                                                            <a href="/appointemnts/<%=data.id%>/edit"
-                                                                class="block px-4 py-2 hover:bg-gray-100  text-green-600"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                                                  </svg>
-                                                                  </a>
-                                                        
-                                                            <a href="" onclick="deleteAppointment('<%=data.id%>')"
-                                                                class="block px-4 py-2 hover:bg-gray-100  text-red-600"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                                  </svg>
-                                                                  </a>
-                                                       
+
+                                                    <a href="/appointments/<%=data.id%>/edit"
+                                                        class="block px-4 py-2 hover:bg-gray-100  text-green-600"><svg
+                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                            class="w-4 h-4">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <a href="" onclick="deleteAppointment('<%=data.id%>')"
+                                                        class="block px-4 py-2 hover:bg-gray-100  text-red-600"><svg
+                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                            class="w-4 h-4">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                        </svg>
+                                                    </a>
+
                                                 </div>
                                             </td>
-                                            
+
 
                                         </tr>
                                         <%})%>
@@ -141,7 +152,7 @@
             </div>
         </div>
     </main>
-
+   
 </body>
 
 </html>

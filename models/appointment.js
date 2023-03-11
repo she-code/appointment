@@ -15,7 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
     static async getAllApointments(userId) {
-      return this.findAll({ where: { userId } });
+      return this.findAll({
+        where: { userId },
+        order: [["createdAt", "DESC"]],
+      });
     }
     static async createAppointment({
       userId,
@@ -42,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static getCurrentDateAppointments(currentUser, START, currentDate) {
+    static async getCurrentDateAppointments(currentUser, START, currentDate) {
       return this.findAll({
         where: {
           [Op.and]: [
@@ -50,15 +53,37 @@ module.exports = (sequelize, DataTypes) => {
               userId: currentUser,
             },
             {
-              createdAt: {
-                [Op.between]: [START.toISOString(), currentDate.toISOString()],
+              date: {
+                [Op.eq]: currentDate,
               },
             },
           ],
         },
+        raw: true,
       });
     }
 
+    static async getPastAppointments(userId, currentDate) {
+      return this.findAll({
+        where: {
+          userId,
+          date: {
+            [Op.lt]: currentDate,
+          },
+        },
+      });
+    }
+
+    static async getUpcoimngAppoitments(userId, currentDate) {
+      return this.findAll({
+        where: {
+          userId,
+          date: {
+            [Op.gt]: currentDate,
+          },
+        },
+      });
+    }
     updateAppointment(title, description) {
       return this.update({ title, description }, { new: true });
     }

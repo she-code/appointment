@@ -53,7 +53,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 //render views
-app.get("/", authenticateJwt, appointController.getCurrentDateAppointments);
+app.get("/", authenticateJwt, appointController.renderAppointmentsPage);
 
 app.get("/signup", (request, response) => {
   response.render("signup", {
@@ -67,8 +67,16 @@ app.get("/login", (request, response) => {
     csrfToken: request.csrfToken(),
   });
 });
+app.get("/signout", (request, response) => {
+  response.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  response.redirect("/login");
+});
 
 app.use("/users", userRoute);
-app.use("/appointemnts", authenticateJwt, appointmentRoute);
+app.use("/appointments", authenticateJwt, appointmentRoute);
 
 module.exports = app;

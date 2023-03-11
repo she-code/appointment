@@ -1,35 +1,9 @@
-const { parse, format } = require("date-fns");
-const { Appointment } = require("../models");
+const { Appointment, User } = require("../models");
 const AppError = require("../utils/AppError");
+const { getTimeRange } = require("../utils/index");
 const { Op } = require("sequelize");
-const sequelize = require("sequelize");
-// const _ = require("lodash");
-
-// const groups = (() => {
-//   const byDay = (item) => parse(item.createdAt, "MM-dd-yyyy", new Date()),
-//     forHour = (item) =>
-//       byDay(item) + " " + parse(item.createdAt, "hh a", new Date()),
-//     by6Hour = (item) => {
-//       const m = parse(item.createdAt);
-//       return (
-//         byDay(item) +
-//         " " +
-//         ["first", "second", "third", "fourth"][Number(m.format("k")) % 6] +
-//         " 6 hours"
-//       );
-//     },
-//     forMonth = (item) => parse(item.createdAt, "MMM YYYY", new Date()),
-//     forWeek = (item) =>
-//       forMonth(item) + " " + parse(item.createdAt, "ww", new Date());
-//   return {
-//     byDay,
-//     forHour,
-//     by6Hour,
-//     forMonth,
-//     forWeek,
-//   };
-// })();
-exports.createAppointment = async (req, res, next) => {
+const { isEqual, parseISO, isBefore, isAfter } = require("date-fns");
+exports.createAppointment = async (req, res) => {
   try {
     //fetch the appointments on that day
     //check if there's an overlapping time
@@ -38,40 +12,33 @@ exports.createAppointment = async (req, res, next) => {
     // suggest the nearest time range
     const { title, description, to, from, date } = req.body;
     const userId = req.user;
-    console.log(to.toString(), from, date);
-    // [Op.between]: [
-    //   { from: { [Op.gte]: sequelize.literal(`TIME '${from}'`) } },
-    //   { to: { [Op.lte]: sequelize.literal(`TIME '${to}'`) } },
-    // ],
+
     const appointExists = await Appointment.findAll({
       where: {
         userId,
         date: new Date(date),
-        [Op.and]: [
-          {
-            from: {
-              [Op.gte]: from,
-            },
-          },
-          {
-            to: {
-              [Op.lte]: to,
-            },
-          },
-        ],
       },
       raw: true,
     });
 
-    if (appointExists.length > 0) {
-      console.log("existing", appointExists);
-      req.session.existingData = appointExists;
+    // store the form input values in session
+    const checkExisitng = getTimeRange(appointExists, from, to);
+
+    if (checkExisitng.length > 0) {
+      req.session.existingData = checkExisitng;
+      req.session.formData = {
+        title,
+        description,
+        date,
+        from,
+        to,
+      };
       req.flash(
         "error",
         "Appointments exist in the given time slot. You can view and delete existing appointments."
       );
-      return res.redirect("/appointemnts/addAppoinment");
-      // return res.json(appointExists);
+      return res.redirect("/appointments/addAppoinment");
+      // return res.json(checkExisitng);
     } else {
       const appointment = await Appointment.createAppointment({
         userId,
@@ -90,51 +57,79 @@ exports.createAppointment = async (req, res, next) => {
   }
 };
 
-exports.getCurrentDateAppointments = async (req, res) => {
+exports.getCurrentDateAppointments = async (req, res, next) => {
   //get userId
   //get the current date
-  //search appointemnts based on current date
+  //search appointments based on current date
   //display the appointments
 
   try {
-    const currentUser = req.user;
-    const currentDate = new Date();
-    const START = new Date();
-    START.setHours(0, 0, 0, 0);
+    const userId = req.user;
 
-    const appointments = await Appointment.getCurrentDateAppointments(
-      currentUser,
-      START,
-      currentDate
-    );
+    const currentData = [];
+    let date = new Date().toISOString().split("T");
+    const appointments = await Appointment.getAllApointments(userId);
+    appointments.forEach((element) => {
+      const split = new Date(element.date).toISOString().split("T");
+      if (isEqual(parseISO(date[0]), parseISO(split[0]))) {
+        currentData.push(element);
+      }
+    });
 
     if (!appointments) {
-      res.send("unable to find");
+      res
+        .status(404)
+        .json({ status: "failed", message: "No appointments found" });
     }
-    // var array = _.groupBy(appointments, groups["forHour"]);
-    // console.log(appointments);
+    res.status(200).json({ status: "success", appointments });
+  } catch (error) {
+    console.log(error);
+    return next(new AppError(error.message));
+  }
+};
 
-    //res.send(appointments);
-    if (req.accepts("html")) {
-      res.render("index", {
-        title: "Online Appointment Platform",
-        csrfToken: req.csrfToken(),
-        appointments,
-      });
-    } else {
-      res.json({
-        user: "user",
-        csrfToken: req.csrfToken(),
-        appointments,
-      });
-    }
-    // res.send(appointemnts);
+exports.getPastAppoitments = async (req, res) => {
+  //get user ID
+  //get current date
+  //fetch the datas whose dare is previous to current date
+  try {
+    const userId = req.user;
+    const currentDate = new Date();
+    const pastappointments = await Appointment.getPastAppointments(
+      userId,
+      currentDate
+    );
+    res.status(200).json({
+      status: "success",
+      result: pastappointments.length,
+      pastappointments,
+    });
   } catch (error) {
     console.log(error);
     res.send(error.message);
   }
 };
-
+exports.getUpcoimngAppoitments = async (req, res) => {
+  //get user ID
+  //get current date
+  //fetch the datas whose date is next to current date
+  try {
+    const userId = req.user;
+    const currentDate = new Date();
+    const upcoimngappointments = await Appointment.getUpcoimngAppoitments(
+      userId,
+      currentDate
+    );
+    res.status(200).json({
+      status: "success",
+      result: upcoimngappointments.length,
+      upcoimngappointments,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error.message);
+  }
+};
 exports.deleteAppointment = async (req, res) => {
   try {
     //get current user
@@ -177,6 +172,60 @@ exports.updateAppointments = async (req, res, next) => {
   }
 };
 
+exports.renderAppointmentsPage = async (req, res) => {
+  const userId = req.user;
+  const currentData = [];
+  const pastAppointments = [];
+  const upcoimngAppointments = [];
+  let date = new Date().toISOString().split("T");
+
+  /* Fetching the appointments for the current date. */
+  const appointments = await Appointment.getAllApointments(userId);
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isEqual(parseISO(date[0]), parseISO(onlyDate[0]))) {
+      currentData.push(element);
+    }
+  });
+  /* Fetching the upcoming appointments. */
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isAfter(parseISO(onlyDate[0]), parseISO(date[0]))) {
+      upcoimngAppointments.push(element);
+      console.log(onlyDate[0]);
+    }
+  });
+
+  /* Fetching the previous appointments. */
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isBefore(parseISO(onlyDate[0]), parseISO(date[0]))) {
+      pastAppointments.push(element);
+      console.log(onlyDate[0]);
+    }
+  });
+  //get user details
+  const user = await User.findByPk(userId);
+  //render the ui
+  if (req.accepts("html")) {
+    res.render("index", {
+      title: "Online Appointment Platform",
+      csrfToken: req.csrfToken(),
+      currentData,
+      upcoimngAppointments,
+      pastAppointments,
+      user,
+    });
+  } else {
+    res.json({
+      user: "user",
+      csrfToken: req.csrfToken(),
+      currentData,
+      upcoimngAppointments,
+      pastAppointments,
+    });
+  }
+};
 //edit election page
 exports.renderUpdateAppointmentPage = async (request, response, next) => {
   const id = request.params.id;
@@ -201,16 +250,13 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
 
 exports.renderAddAppointmentPage = async (request, response) => {
   const existingData = response.locals.existingData ?? [];
-  for (const obj of existingData) {
-    for (const [key, value] of Object.entries(obj)) {
-      console.log(key, value);
-    }
-  }
-  console.log(existingData.length, "length");
+  const formData = response.locals.formData ?? [];
+
   if (request.accepts("html")) {
     response.render("addAppointment", {
       title: "Add Appointment",
       existingData,
+      formData,
       csrfToken: request.csrfToken(),
     });
   } else {
@@ -221,11 +267,13 @@ exports.renderAddAppointmentPage = async (request, response) => {
 };
 exports.getAllAppointments = async (req, res) => {
   const userId = req.user;
+
   const appoints = await Appointment.findAll({
     where: {
       userId,
     },
     order: [["createdAt", "DESC"]],
   });
+
   res.json(appoints);
 };

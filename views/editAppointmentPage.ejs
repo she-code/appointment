@@ -79,7 +79,7 @@
             const cs = document.getElementById('_csrf').value
             const id = document.getElementById('appointmentId').value
             console.log(title, cs, id)
-            fetch(`/appointemnts/${id}`, {
+            fetch(`/appointments/${id}`, {
                 method: 'put',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

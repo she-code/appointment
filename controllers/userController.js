@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
 const { generateJwtToken, generateHashedPassword } = require("../utils/index");
-
+const AppError = require("../utils/AppError");
 //creates token and saves it in cookies
 const createSendToken = (user, req, res) => {
   //generate jwt token
@@ -86,5 +86,22 @@ exports.login = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
+  }
+};
+
+exports.getCurrentUser = async (req, res, next) => {
+  try {
+    const userId = req.user;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return next(new AppError("User not found with the given Id", 404));
+    }
+    res.status(200).json({
+      status: "success",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error.message);
   }
 };
