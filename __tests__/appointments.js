@@ -165,7 +165,6 @@ describe("Online Voting Platform", function () {
         _csrf: csrfToken,
       })
       .set("Cookie", cookie);
-    console.log(response.text);
     // const parsedDeletedREsponse = JSON.parse(response.text);
 
     expect(true).toBe(true);
