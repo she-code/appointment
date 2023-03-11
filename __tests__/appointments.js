@@ -103,7 +103,6 @@ describe("Online Voting Platform", function () {
         to: to,
         _csrf: csrfToken,
       });
-    console.log(res.text);
     const appointmentId = await parseAppointmentId(agent, cookie);
     //got to edit page
     res = await agent

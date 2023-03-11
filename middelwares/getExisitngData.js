@@ -1,3 +1,11 @@
+/**
+ * It checks if there is any existing data in the session, if there is, it will assign it to the
+ * res.locals object, and then delete it from the session.
+ * @param req - The request object represents the HTTP request and has properties for the request query
+ * string, parameters, body, HTTP headers, and so on.
+ * @param res - the response object
+ * @param next - The callback function that will be called when the middleware is done.
+ */
 const getExistingData = (req, res, next) => {
   const existingData = req.session.existingData;
   const formData = req.session.formData;

@@ -1,7 +1,14 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { areIntervalsOverlapping, add, format } = require("date-fns");
-
+const {
+  areIntervalsOverlapping,
+  add,
+  format,
+  parseISO,
+  isBefore,
+  isAfter,
+  isEqual,
+} = require("date-fns");
 exports.generateHashedPassword = async (cleanPassword) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(cleanPassword, salt);
@@ -70,4 +77,56 @@ exports.getTimeRange = (data, from, to) => {
     }
   });
   return overlappingZones;
+};
+
+//creates token and saves it in cookies
+exports.createSendToken = (user, req, res) => {
+  //generate jwt token
+  const token = this.generateJwtToken(user.id, "User");
+
+  const cookieOPtions = {
+    expiresIn: "60d",
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV == "production") cookieOPtions.secure = true;
+
+  res.cookie("jwt", token, cookieOPtions);
+  console.log(user);
+  //redirect to elections page
+  res.redirect("/");
+};
+
+exports.getPastAppointment = (appointments, date) => {
+  const pastAppointments = [];
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isBefore(parseISO(onlyDate[0]), parseISO(date[0]))) {
+      pastAppointments.push(element);
+    }
+  });
+  return pastAppointments;
+};
+/* Fetching the appointments for the current date. */
+exports.getCurrentDateAppointment = (appointments, date) => {
+  let currentData = [];
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isEqual(parseISO(date[0]), parseISO(onlyDate[0]))) {
+      currentData.push(element);
+    }
+  });
+  return currentData;
+};
+
+/* Fetching the upcoming appointments. */
+exports.getUpcomingAppointment = (appointments, date) => {
+  let upcoimngAppointments = [];
+  appointments.forEach((element) => {
+    const onlyDate = new Date(element.date).toISOString().split("T");
+    if (isAfter(parseISO(onlyDate[0]), parseISO(date[0]))) {
+      upcoimngAppointments.push(element);
+      console.log(onlyDate[0]);
+    }
+  });
+  return upcoimngAppointments;
 };

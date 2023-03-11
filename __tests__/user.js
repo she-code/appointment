@@ -42,6 +42,7 @@ describe("Online Appointment Platform", function () {
       console.log(error);
     }
   });
+  /* Testing the sign up route. */
   test("test for Sign up", async () => {
     let res = await agent.get("/signup");
     let csrfToken = extractCsrfToken(res);
@@ -60,6 +61,7 @@ describe("Online Appointment Platform", function () {
     expect(res.statusCode).toBe(302);
   });
 
+  /* Testing the sign in route. */
   test("test for Sign In", async () => {
     let res = await agent.get("/login");
     let csrfToken = extractCsrfToken(res);
@@ -71,6 +73,7 @@ describe("Online Appointment Platform", function () {
     // console.log(response);
     expect(response.statusCode).toBe(302);
   });
+  /* This is a test to check if the user is authenticated to access the protected route. */
   test("auth check to access protected route", async () => {
     const res = await request(app)
       .get("/")
@@ -79,6 +82,7 @@ describe("Online Appointment Platform", function () {
 
     expect(res.statusCode).toBe(200);
   });
+  /* This is a test to check if the user is authenticated to access the protected route. */
   test("Sign out", async () => {
     let res = await agent.get("/");
     expect(res.statusCode).toBe(200);

@@ -1,23 +1,7 @@
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
-const { generateJwtToken, generateHashedPassword } = require("../utils/index");
+const { createSendToken, generateHashedPassword } = require("../utils/index");
 const AppError = require("../utils/AppError");
-//creates token and saves it in cookies
-const createSendToken = (user, req, res) => {
-  //generate jwt token
-  const token = generateJwtToken(user.id, "User");
-
-  const cookieOPtions = {
-    expiresIn: "60d",
-    httpOnly: true,
-  };
-  if (process.env.NODE_ENV == "production") cookieOPtions.secure = true;
-
-  res.cookie("jwt", token, cookieOPtions);
-  console.log(user);
-  //redirect to elections page
-  res.redirect("/");
-};
 
 //register User
 exports.register = async (req, res) => {
@@ -60,12 +44,12 @@ exports.register = async (req, res) => {
           req.flash("error", "Email address already in use!");
         }
       }
-      //   res.redirect("/todos");
       res.redirect("/signup");
     }
   }
 };
 
+//login user
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -89,6 +73,7 @@ exports.login = async (req, res) => {
   }
 };
 
+//get currently logged in user
 exports.getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.user;

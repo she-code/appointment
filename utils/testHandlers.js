@@ -1,9 +1,12 @@
 const cheerio = require("cheerio");
+
+//extracts csrf
 exports.extractCsrfToken = (res) => {
   var $ = cheerio.load(res.text);
   return $("[name=_csrf]").val();
 };
 
+/* logs in user. */
 exports.login = async (agent, email, password, cookie) => {
   let res = await agent.get("/login");
   let csrfToken = this.extractCsrfToken(res);
@@ -17,6 +20,7 @@ exports.login = async (agent, email, password, cookie) => {
     .set("Cookie", cookie);
 };
 
+//returns appointment id
 exports.parseAppointmentId = async (agent, cookie) => {
   const groupedResponse = await agent
     .get("/")

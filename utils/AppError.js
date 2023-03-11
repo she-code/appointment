@@ -1,3 +1,5 @@
+/* This class is a custom error class that extends the built-in Error class and is used to handle
+errors in the application. */
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);

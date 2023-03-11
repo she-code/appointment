@@ -1,8 +1,12 @@
 const { Appointment, User } = require("../models");
 const AppError = require("../utils/AppError");
-const { getTimeRange } = require("../utils/index");
-const { Op } = require("sequelize");
-const { isEqual, parseISO, isBefore, isAfter } = require("date-fns");
+const {
+  getTimeRange,
+  getPastAppointment,
+  getCurrentDateAppointment,
+} = require("../utils/index");
+
+/* Creating an appointment. */
 exports.createAppointment = async (req, res) => {
   try {
     //fetch the appointments on that day
@@ -10,9 +14,11 @@ exports.createAppointment = async (req, res) => {
     //create option to delete and add the new one
     //fetch the appointments near to that time range
     // suggest the nearest time range
+
     const { title, description, to, from, date } = req.body;
     const userId = req.user;
 
+    /* Fetching the appointments on the current day. */
     const appointExists = await Appointment.findAll({
       where: {
         userId,
@@ -21,7 +27,7 @@ exports.createAppointment = async (req, res) => {
       raw: true,
     });
 
-    // store the form input values in session
+    /* Checking if there is an overlapping time. */
     const checkExisitng = getTimeRange(appointExists, from, to);
 
     if (checkExisitng.length > 0) {
@@ -38,8 +44,8 @@ exports.createAppointment = async (req, res) => {
         "Appointments exist in the given time slot. You can view and delete existing appointments."
       );
       return res.redirect("/appointments/addAppoinment");
-      // return res.json(checkExisitng);
     } else {
+      // eslint-disable-next-line no-unused-vars
       const appointment = await Appointment.createAppointment({
         userId,
         date,
@@ -48,7 +54,6 @@ exports.createAppointment = async (req, res) => {
         from,
         to,
       });
-      console.log(appointment, "created");
       return res.redirect("/");
     }
   } catch (error) {
@@ -57,6 +62,7 @@ exports.createAppointment = async (req, res) => {
   }
 };
 
+/* Fetching the appointments for the current date. */
 exports.getCurrentDateAppointments = async (req, res, next) => {
   //get userId
   //get the current date
@@ -65,23 +71,16 @@ exports.getCurrentDateAppointments = async (req, res, next) => {
 
   try {
     const userId = req.user;
-
-    const currentData = [];
     let date = new Date().toISOString().split("T");
     const appointments = await Appointment.getAllApointments(userId);
-    appointments.forEach((element) => {
-      const split = new Date(element.date).toISOString().split("T");
-      if (isEqual(parseISO(date[0]), parseISO(split[0]))) {
-        currentData.push(element);
-      }
-    });
+    const currentData = getCurrentDateAppointment(appointments, date);
 
     if (!appointments) {
       res
         .status(404)
         .json({ status: "failed", message: "No appointments found" });
     }
-    res.status(200).json({ status: "success", appointments });
+    res.status(200).json({ status: "success", currentData });
   } catch (error) {
     console.log(error);
     return next(new AppError(error.message));
@@ -94,11 +93,10 @@ exports.getPastAppoitments = async (req, res) => {
   //fetch the datas whose dare is previous to current date
   try {
     const userId = req.user;
-    const currentDate = new Date();
-    const pastappointments = await Appointment.getPastAppointments(
-      userId,
-      currentDate
-    );
+    const appointments = await Appointment.getAllApointments(userId);
+    let date = new Date().toISOString().split("T");
+
+    const pastappointments = getPastAppointment(appointments, date);
     res.status(200).json({
       status: "success",
       result: pastappointments.length,
@@ -115,11 +113,11 @@ exports.getUpcoimngAppoitments = async (req, res) => {
   //fetch the datas whose date is next to current date
   try {
     const userId = req.user;
-    const currentDate = new Date();
-    const upcoimngappointments = await Appointment.getUpcoimngAppoitments(
-      userId,
-      currentDate
-    );
+    let date = new Date().toISOString().split("T");
+    /* Fetching all the appointments of a user. */
+    const appointments = await Appointment.getAllApointments(userId);
+
+    const upcoimngappointments = this.getUpcoimngAppoitment(appointments, date);
     res.status(200).json({
       status: "success",
       result: upcoimngappointments.length,
@@ -130,6 +128,8 @@ exports.getUpcoimngAppoitments = async (req, res) => {
     res.send(error.message);
   }
 };
+
+/* Deleting an appointment. */
 exports.deleteAppointment = async (req, res) => {
   try {
     //get current user
@@ -145,6 +145,7 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
+/* Updating the appointments. */
 exports.updateAppointments = async (req, res, next) => {
   //get userId
   //get appointment id
@@ -172,38 +173,23 @@ exports.updateAppointments = async (req, res, next) => {
   }
 };
 
+/* Rendering the appointments page. */
 exports.renderAppointmentsPage = async (req, res) => {
   const userId = req.user;
-  const currentData = [];
-  const pastAppointments = [];
-  const upcoimngAppointments = [];
   let date = new Date().toISOString().split("T");
 
-  /* Fetching the appointments for the current date. */
+  /* Fetching all the appointments of a user. */
   const appointments = await Appointment.getAllApointments(userId);
-  appointments.forEach((element) => {
-    const onlyDate = new Date(element.date).toISOString().split("T");
-    if (isEqual(parseISO(date[0]), parseISO(onlyDate[0]))) {
-      currentData.push(element);
-    }
-  });
-  /* Fetching the upcoming appointments. */
-  appointments.forEach((element) => {
-    const onlyDate = new Date(element.date).toISOString().split("T");
-    if (isAfter(parseISO(onlyDate[0]), parseISO(date[0]))) {
-      upcoimngAppointments.push(element);
-      console.log(onlyDate[0]);
-    }
-  });
 
-  /* Fetching the previous appointments. */
-  appointments.forEach((element) => {
-    const onlyDate = new Date(element.date).toISOString().split("T");
-    if (isBefore(parseISO(onlyDate[0]), parseISO(date[0]))) {
-      pastAppointments.push(element);
-      console.log(onlyDate[0]);
-    }
-  });
+  /* Fetching the appointments for the current date. */
+  const currentData = getCurrentDateAppointment(appointments, date);
+
+  /* Fetching the appointments whose date is previous to the current date. */
+  const pastAppointments = getPastAppointment(appointments, date);
+
+  /* Fetching the appointments whose date is next to the current date. */
+  const upcoimngAppointments = getCurrentDateAppointment(appointments, date);
+
   //get user details
   const user = await User.findByPk(userId);
   //render the ui
@@ -248,6 +234,7 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
   }
 };
 
+/* Rendering the add appointment page. */
 exports.renderAddAppointmentPage = async (request, response) => {
   const existingData = response.locals.existingData ?? [];
   const formData = response.locals.formData ?? [];
@@ -265,6 +252,7 @@ exports.renderAddAppointmentPage = async (request, response) => {
     });
   }
 };
+/* A function that is used to fetch all the appointments of a user. */
 exports.getAllAppointments = async (req, res) => {
   const userId = req.user;
 

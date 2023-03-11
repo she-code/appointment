@@ -20,23 +20,12 @@ const authenticateJwt = (req, res, next) => {
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, verifiedJwt) => {
     if (err) {
-      // console.log(err);
-      // //check this logic
-      // res.redirect("/");
-      //   if (req.originalUrl == "/") {
-      //     next();
-      //   }
       new AppError("Your token has expired! Please log in again.", 401);
     } else {
       req.user = verifiedJwt.id;
       console.log(token);
       console.log("user", req.user);
-      // res.status(200).json({"token":verifiedJwt} )
 
-      //check this logic
-      // if(req.orginalUrl == '/'){
-      //   res.redirect('/elections')
-      // }
       next();
     }
   });

@@ -16,7 +16,6 @@
         function deleteAppointment(id) {
             var result = confirm("Are you sure?")
             if (result) {
-                // const confilrm =  document.getElementById("confirmDelete").value
                 fetch(`/appointments/${id}`, {
                     method: 'delete',
                     headers: { "Content-Type": "application/json" },

@@ -1,3 +1,4 @@
+/* Router for appointments. */
 const express = require("express");
 const appointmentController = require("../controllers/appointmentController");
 const existingData = require("../middelwares/getExisitngData");
