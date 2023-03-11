@@ -9,6 +9,7 @@ It enables users:
 - Displays the occupied times when user tries to create new appointment in an overlapping time
 - Allows user to delete existing appointments and add the new one
 
+[Link](https://appointment-app-uja4.onrender.com) to deployed website.
 Here are some of the pages of the platform.
 
 ![new](https://user-images.githubusercontent.com/54357776/224485921-73261255-1c38-4e35-9eaf-9e6659034620.png)
