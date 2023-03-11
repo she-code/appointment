@@ -15,6 +15,7 @@ exports.generateHashedPassword = async (cleanPassword) => {
   return hashedPassword;
 };
 
+/* This is a function that is used to generate a JWT token. */
 exports.generateJwtToken = (userId, userType, expiresIn = "0.5y") => {
   const token = jwt.sign(
     { id: userId, userType: userType },

@@ -4,6 +4,7 @@ const {
   getTimeRange,
   getPastAppointment,
   getCurrentDateAppointment,
+  getUpcomingAppointment,
 } = require("../utils/index");
 
 /* Creating an appointment. */
@@ -188,7 +189,7 @@ exports.renderAppointmentsPage = async (req, res) => {
   const pastAppointments = getPastAppointment(appointments, date);
 
   /* Fetching the appointments whose date is next to the current date. */
-  const upcoimngAppointments = getCurrentDateAppointment(appointments, date);
+  const upcoimngAppointments = getUpcomingAppointment(appointments, date);
 
   //get user details
   const user = await User.findByPk(userId);
@@ -217,6 +218,8 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
   const id = request.params.id;
   const loggedInUser = request.user;
   const appointment = await Appointment.getAppointmentDetails(loggedInUser, id);
+  const user = await User.findByPk(loggedInUser);
+
   if (!appointment) {
     return next(new AppError("No appointment found with that id", 404));
   }
@@ -225,6 +228,7 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
     response.render("editAppointmentPage", {
       title: "Update Appointment",
       appointment,
+      user,
       csrfToken: request.csrfToken(),
     });
   } else {
@@ -238,12 +242,15 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
 exports.renderAddAppointmentPage = async (request, response) => {
   const existingData = response.locals.existingData ?? [];
   const formData = response.locals.formData ?? [];
+  const userId = request.user;
+  const user = await User.findByPk(userId);
 
   if (request.accepts("html")) {
     response.render("addAppointment", {
       title: "Add Appointment",
       existingData,
       formData,
+      user,
       csrfToken: request.csrfToken(),
     });
   } else {
