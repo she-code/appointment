@@ -29,22 +29,21 @@ exports.generateJwtToken = (userId, userType, expiresIn = "0.5y") => {
 
 exports.getTimeRange = (data, from, to) => {
   /** Stores the overlapping time intervals */
-  // console.log(data, "getTime");
   const overlappingZones = [];
   data.forEach((doc) => {
-    /** check if the doc have all the required @keys */
+    /** check if the doc have all the required  */
     if (doc?.from && doc?.to && doc?.date) {
-      /** step 1. format the current date => @returns 20/01/01 format */
+      /**  format the current date =>  */
       const formattedDate = format(new Date(doc?.date), "P");
-      /** step 2. split the input fields */
-      const splitFrom = from?.split(":"); /** @return [18, 30, 00] */
-      const splitTo = to?.split(":"); /** @return [18, 30, 00] */
+      /** split the input fields */
+      const splitFrom = from?.split(":");
+      const splitTo = to?.split(":");
 
-      /** step 3. split the "from" and "to" values from the doc */
+      /** split the "from" and "to" values from the doc */
       const splitDocFrom = doc?.from.split(":");
       const splitDocTo = doc?.to.split(":");
 
-      /** step 4. add the splitted time's to the formatted date */
+      /** add the splitted time's to the formatted date */
       const docFrom = add(new Date(formattedDate), {
         hours: splitDocFrom?.[0],
         minutes: splitDocFrom?.[1],
@@ -67,12 +66,12 @@ exports.getTimeRange = (data, from, to) => {
         seconds: splitTo?.[2],
       });
 
-      /** step 5. check if the intervals are overlapping */
+      /**  check if the intervals are overlapping */
       const isOverlapping = areIntervalsOverlapping(
         { start: new Date(docFrom), end: new Date(docTo) },
         { start: new Date(inputFrom), end: new Date(inputTo) }
       );
-      /** step 6. if overlapping, push value to "overlappingZones" array */
+      /**  if overlapping, push value to "overlappingZones" array */
       if (isOverlapping) overlappingZones.push(doc);
       //  console.log(overlappingZones, "overLap");
     }
@@ -126,8 +125,35 @@ exports.getUpcomingAppointment = (appointments, date) => {
     const onlyDate = new Date(element.date).toISOString().split("T");
     if (isAfter(parseISO(onlyDate[0]), parseISO(date[0]))) {
       upcoimngAppointments.push(element);
-      console.log(onlyDate[0]);
     }
   });
   return upcoimngAppointments;
+};
+
+exports.convertToDate = (data) => {
+  const convertedDates = [];
+  data.forEach((doc) => {
+    /** check if the doc have all the required  */
+    if (doc?.from && doc?.to && doc?.date) {
+      /**  format the current date =>  */
+      const formattedDate = format(new Date(doc?.date), "P");
+      /** split the "from" and "to" values from the doc */
+      const splitDocFrom = doc?.from.split(":");
+      const splitDocTo = doc?.to.split(":");
+
+      /** add the splitted time's to the formatted date */
+      const docFrom = add(new Date(formattedDate), {
+        hours: splitDocFrom?.[0],
+        minutes: splitDocFrom?.[1],
+        seconds: splitDocFrom?.[2],
+      });
+      const docTo = add(new Date(formattedDate), {
+        hours: splitDocTo?.[0],
+        minutes: splitDocTo?.[1],
+        seconds: splitDocTo?.[2],
+      });
+      convertedDates.push({ from: docFrom, to: docTo });
+    }
+  });
+  return convertedDates;
 };

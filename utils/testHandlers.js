@@ -29,8 +29,7 @@ exports.parseAppointmentId = async (agent, cookie) => {
 
   const parsedGroupedResponse = JSON.parse(groupedResponse.text);
   const appointmentsCount = parsedGroupedResponse.currentData.length;
-  console.log({ appointmentsCount });
-  console.log({ parsedGroupedResponse });
+
   const latestAppointment =
     parsedGroupedResponse.currentData[appointmentsCount - 1];
   const appointmentId = latestAppointment.id;

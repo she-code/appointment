@@ -9,6 +9,10 @@
 const getExistingData = (req, res, next) => {
   const existingData = req.session.existingData;
   const formData = req.session.formData;
+  const suggestedTime = req.session.suggestedTime;
+
+  /* Checking if there is any existing data in the session, if there is, it will assign it to the
+   * res.locals object, and then delete it from the session. */
   if (existingData) {
     res.locals.existingData = existingData;
     delete req.session.existingData;
@@ -16,6 +20,10 @@ const getExistingData = (req, res, next) => {
   if (formData) {
     res.locals.formData = formData;
     delete req.session.formData;
+  }
+  if (suggestedTime) {
+    res.locals.suggestedTime = suggestedTime;
+    delete req.session.suggestedTime;
   }
   // clear the form input values from session when redirected to another page
   if (
@@ -31,6 +39,12 @@ const getExistingData = (req, res, next) => {
     req.originalUrl !== "/appointments/addAppoinment"
   ) {
     delete req.session.existingData;
+  }
+  if (
+    req.session.suggestedTime &&
+    req.originalUrl !== "/appointments/addAppoinment"
+  ) {
+    delete req.session.suggestedTime;
   }
   next();
 };

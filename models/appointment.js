@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
     static async getAllApointments(userId) {
       return this.findAll({
         where: { userId },
-        order: [["createdAt", "DESC"]],
+        //  order: [["createdAt", "DESC"]],
+        order: [["from", "ASC"]],
       });
     }
     static async createAppointment({

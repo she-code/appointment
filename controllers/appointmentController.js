@@ -6,6 +6,7 @@ const {
   getCurrentDateAppointment,
   getUpcomingAppointment,
 } = require("../utils/index");
+const { suggestTime } = require("../utils/suggestTime");
 
 /* Creating an appointment. */
 exports.createAppointment = async (req, res) => {
@@ -26,10 +27,14 @@ exports.createAppointment = async (req, res) => {
         date: new Date(date),
       },
       raw: true,
+      order: [["from", "ASC"]],
     });
 
     /* Checking if there is an overlapping time. */
     const checkExisitng = getTimeRange(appointExists, from, to);
+
+    /* A function that is used to suggest the nearest time range. */
+    const suggestedTime = suggestTime(appointExists, from, to);
 
     if (checkExisitng.length > 0) {
       req.session.existingData = checkExisitng;
@@ -40,6 +45,7 @@ exports.createAppointment = async (req, res) => {
         from,
         to,
       };
+      req.session.suggestedTime = suggestedTime;
       req.flash(
         "error",
         "Appointments exist in the given time slot. You can view and delete existing appointments."
@@ -161,7 +167,6 @@ exports.updateAppointments = async (req, res, next) => {
     if (!appointment) {
       return next(new AppError("Appointment not found", 404));
     }
-    console.log(appointment);
     const updatedAppointment = await appointment.updateAppointment(
       title,
       description
@@ -242,6 +247,7 @@ exports.renderUpdateAppointmentPage = async (request, response, next) => {
 exports.renderAddAppointmentPage = async (request, response) => {
   const existingData = response.locals.existingData ?? [];
   const formData = response.locals.formData ?? [];
+  const suggestedTime = response.locals.suggestedTime ?? [];
   const userId = request.user;
   const user = await User.findByPk(userId);
 
@@ -251,6 +257,7 @@ exports.renderAddAppointmentPage = async (request, response) => {
       existingData,
       formData,
       user,
+      suggestedTime,
       csrfToken: request.csrfToken(),
     });
   } else {

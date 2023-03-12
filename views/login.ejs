@@ -26,7 +26,7 @@
                 style="width: 500px; height: 70%; width: 500px;">
                 <div class="mx-auto flex  flex-col	mt-5 ">
                     <h6 class="py-3 text-center text-2xl font-bold text-green-600">Sign In</h6>
-                    <form action="/users/login" method="post">
+                    <form action="/users/login" method="post"  onsubmit="submit_btn.disabled = true; return true;">
                         <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
 
                         <div class="py-3">
@@ -60,9 +60,7 @@
                     <p class="py-2 text-lg">
                         New here? <a href="/signup" class="text-green-600 font-bold text-lg">Sign-Up</a>
                     </p>
-                    <p class="py-2 text-lg">
-                        <a href="" class="text-green-600 font-bold text-lg">Forgot Password?</a>
-                    </p>
+                    
                     <%-include("errorMsg.ejs")%>
                 </div>
 
@@ -72,7 +70,6 @@
     <script>
         const password = document.getElementById('password')
        function viewPassword(){
-        console.log('clicked')
         if(password.type=="text"){
             password.type="password"
 

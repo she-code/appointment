@@ -26,11 +26,11 @@ describe("Online Appointment Platform", function () {
         _csrf: csrfToken,
       })
       .then((res) => {
-        const cookies = res.headers["set-cookie"][0]
+        const cookies = res.headers["set-cookie"][1]
           .split(",")
           .map((item) => item.split(";")[0]);
         cookie = cookies.join(";");
-        console.log({ admin: cookie });
+        console.log({ user: cookie });
       });
   });
 
@@ -70,7 +70,6 @@ describe("Online Appointment Platform", function () {
       password: "password",
       _csrf: csrfToken,
     });
-    // console.log(response);
     expect(response.statusCode).toBe(302);
   });
   /* This is a test to check if the user is authenticated to access the protected route. */

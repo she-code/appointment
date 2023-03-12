@@ -30,7 +30,7 @@ describe("Online Voting Platform", function () {
         _csrf: csrfToken,
       })
       .then((res) => {
-        const cookies = res.headers["set-cookie"][0]
+        const cookies = res.headers["set-cookie"][1]
           .split(",")
           .map((item) => item.split(";")[0]);
         cookie = cookies.join(";");
@@ -122,7 +122,6 @@ describe("Online Voting Platform", function () {
     expect(updatedAppointment.title).toBe("Test appointment updated");
   });
 
-  //csrf problem
   //delete Appointment
   test("Delete appointment", async () => {
     const agent = request.agent(server);
@@ -154,8 +153,10 @@ describe("Online Voting Platform", function () {
       });
 
     const appointmentId = await parseAppointmentId(agent, cookie);
-    //got to edit page
-    res = await agent.get(`/`).set("Cookie", cookie);
+
+    res = await agent
+      .get(`/appointments/${appointmentId}/edit`)
+      .set("Cookie", cookie);
     csrfToken = extractCsrfToken(res);
 
     const response = await agent
@@ -164,8 +165,8 @@ describe("Online Voting Platform", function () {
         _csrf: csrfToken,
       })
       .set("Cookie", cookie);
-    // const parsedDeletedREsponse = JSON.parse(response.text);
+    const parsedDeletedREsponse = JSON.parse(response.text);
 
-    expect(true).toBe(true);
+    expect(parsedDeletedREsponse).toBe(true);
   });
 });

@@ -15,7 +15,7 @@ const authenticateJwt = (req, res, next) => {
     token = req.cookies.jwt;
   }
   if (!token) {
-    // next(new AppError("Invalid credential. Please log in again!", 401));
+    //next(new AppError("Invalid credential. Please log in again!", 401));
     res.redirect("/login");
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, verifiedJwt) => {

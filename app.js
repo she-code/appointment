@@ -17,7 +17,9 @@ const authenticateJwt = require("./middelwares/authenticate");
 const userRoute = require("./routes/userRoute");
 const appointmentRoute = require("./routes/appointmentRoute");
 const appointController = require("./controllers/appointmentController");
-//parse jsom
+const globalErrorHandler = require("./controllers/errorController");
+
+//parse json
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
@@ -41,7 +43,7 @@ app.use((req, res, next) => {
   console.log(process.env.NODE_ENV);
   next();
 });
-app.use(csurf(process.env.CSURF_SECRET, ["PUT", "DELETE", "PATCH"]));
+app.use(csurf(process.env.CSURF_SECRET, ["PUT", "DELETE", "PATCH", "POST"]));
 
 app.use(flash());
 app.use(function (request, response, next) {
@@ -78,5 +80,5 @@ app.get("/signout", (request, response) => {
 
 app.use("/users", userRoute);
 app.use("/appointments", authenticateJwt, appointmentRoute);
-
+app.use(globalErrorHandler);
 module.exports = app;

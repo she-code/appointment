@@ -147,7 +147,25 @@
 
                             </table>
                             <%}%>
+                            <%if(suggestedTime.length > 0){%>
+                                <%for(let i=0;i<suggestedTime.length;i++){%>
+                                    <%var splittedFrom = suggestedTime[0].from.split(' ')[0]
+                                    var splittedTo = suggestedTime[0].to.split(' ')[0]
+                                    %>
+                                <%}%>
+                              <p class="mt-5 font-semibold text-lg text-gray-500 text-center mb-3">Nearest Free Slot</p>  
+                               <div class="bg-blue-400 rounded-full text-white py-2 px-3 text-center w-40	"><p><%=splittedFrom%> - <%=splittedTo%></p></div> 
+                             <%if(suggestedTime.length>1){%>
+                               <%for(let i=1;i<suggestedTime.length;i++){%>
+                                <%var timeFrom = suggestedTime[i].from.split(' ')[0]
+                                var timeTo = suggestedTime[i].to.split(' ')[0]
+                                %>
+                                <p class="mt-5 font-semibold text-lg text-gray-500 text-center mb-3">Other Free Slots</p>  
+                               <div class="bg-blue-400 rounded-full text-white py-2 px-3 text-center w-40	"><p><%=timeFrom%> - <%=timeTo%></p></div> 
 
+                            <%}%>
+                            <%}%>
+                           <% }%>
                 </div>
             </div>
         </div>
