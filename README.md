@@ -17,4 +17,6 @@ Here are some of the pages of the platform.
 ![edit](https://user-images.githubusercontent.com/54357776/224485801-f54844e5-2a54-4c20-b959-79b4ad19bd9b.png)
 ![past](https://user-images.githubusercontent.com/54357776/224485806-ce019768-7087-4de7-88e6-729feb72c483.png)
 ![today](https://user-images.githubusercontent.com/54357776/224485809-bd287369-6e0c-49ca-9886-2df29f78c9ec.png)
-![upcming](https://user-images.githubusercontent.com/54357776/224485811-6e058d63-54f1-43ff-aaa1-d7260b6dafb1.png)
+![upcming](https://user-images.githubusercontent.com/54357776/224485811-6e058d63-54f1-43ff-aaa1-d7260b6dafb1.png)\
+![edit](https://user-images.githubusercontent.com/54357776/224541783-a5bd9db4-ec96-43e6-948d-3cf87e70a4a6.png)
+
