@@ -55,8 +55,14 @@ describe("Online Voting Platform", function () {
     let minutes = date.getMinutes();
     let secs = date.getSeconds();
     let from = `${hours}:${minutes}:${secs}`;
-    let afterHour = hours + 1;
+
+    // Adjust to a valid hour (e.g., adding 2 hours)
+    let afterHour = hours + 2;
+    if (afterHour > 23) {
+      afterHour = afterHour - 24; // Adjust to the next day if needed
+    }
     let to = `${afterHour}:${minutes}:${secs}`;
+
     let res = await agent
       .get("/appointments/addAppoinment")
       .set("Cookie", cookie);
@@ -86,7 +92,15 @@ describe("Online Voting Platform", function () {
     let hours = date.getHours();
     let minutes = date.getMinutes();
     let secs = date.getSeconds();
-    let afterHour = hours + 1;
+    // let afterHour = hours + 1;
+
+    // let to = `${afterHour + 1}:${minutes}:${secs}`;
+
+    // Adjust to a valid hour (e.g., adding 2 hours)
+    let afterHour = hours + 2;
+    if (afterHour > 23) {
+      afterHour = afterHour - 24; // Adjust to the next day if needed
+    }
     let from = `${afterHour}:${minutes}:${secs}`;
     let to = `${afterHour + 1}:${minutes}:${secs}`;
     await createAppointment(
