@@ -8,7 +8,8 @@
     "start": "nodemon -e js,ejs",
     "test": "NODE_ENV=test jest --detectOpenHandles",
     "start:prod": "node index.js",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "npm install && NODE_ENV=production npx sequelize-cli db:migrate"
   },
   "keywords": [],
   "author": "",
