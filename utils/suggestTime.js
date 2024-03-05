@@ -14,7 +14,6 @@ exports.suggestTime = (appointments, requestedFrom, requestedTo) => {
     minutes: splitFrom?.[1],
     seconds: splitFrom?.[2],
   });
-
   //creates to  + date
   const inputTo = add(new Date(formattedDate), {
     hours: splitTo?.[0],

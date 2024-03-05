@@ -6,6 +6,7 @@ const {
   parseAppointmentId,
   extractCsrfToken,
   login,
+  createAppointment,
 } = require("../utils/testHandlers");
 let server, agent;
 const SECONDS = 1000;
@@ -88,27 +89,36 @@ describe("Online Voting Platform", function () {
     let afterHour = hours + 1;
     let from = `${afterHour}:${minutes}:${secs}`;
     let to = `${afterHour + 1}:${minutes}:${secs}`;
-    let res = await agent
-      .get("/appointments/addAppoinment")
-      .set("Cookie", cookie);
-    let csrfToken = extractCsrfToken(res);
-    res = await agent
-      .post("/appointments/createAppointment")
-      .set("Cookie", cookie)
-      .send({
-        title: "Test Appointment",
-        description: "checking from test",
-        date: date,
-        from: from,
-        to: to,
-        _csrf: csrfToken,
-      });
+    await createAppointment(
+      agent,
+      cookie,
+      date,
+      from,
+      to,
+      "Test for edit",
+      "checking edit"
+    );
+    // let res = await agent
+    //   .get("/appointments/addAppoinment")
+    //   .set("Cookie", cookie);
+    // let csrfToken = extractCsrfToken(res);
+    // res = await agent
+    //   .post("/appointments/createAppointment")
+    //   .set("Cookie", cookie)
+    //   .send({
+    //     title: "Test Appointment",
+    //     description: "checking from test",
+    //     date: date,
+    //     from: from,
+    //     to: to,
+    //     _csrf: csrfToken,
+    //   });
     const appointmentId = await parseAppointmentId(agent, cookie);
     //got to edit page
-    res = await agent
+    let res = await agent
       .get(`/appointments/${appointmentId}/edit`)
       .set("Cookie", cookie);
-    csrfToken = extractCsrfToken(res);
+    let csrfToken = extractCsrfToken(res);
 
     const response = await agent
       .put(`/appointments/${appointmentId}`)
@@ -126,7 +136,7 @@ describe("Online Voting Platform", function () {
   test("Delete appointment", async () => {
     const agent = request.agent(server);
     await login(agent, "test3@gmail.com", "12345678", cookie);
-    //create Election
+    //create Appointment
     let currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
     let date = new Date();
@@ -136,28 +146,21 @@ describe("Online Voting Platform", function () {
     let afterHour = hours + 1;
     let from = `${afterHour + 1}:${minutes}:${secs}`;
     let to = `${afterHour + 2}:${minutes}:${secs}`;
-    let res = await agent
-      .get("/appointments/addAppoinment")
-      .set("Cookie", cookie);
-    let csrfToken = extractCsrfToken(res);
-    res = await agent
-      .post("/appointments/createAppointment")
-      .set("Cookie", cookie)
-      .send({
-        title: "Test Appointment",
-        description: "checking from test",
-        date: date,
-        from: from,
-        to: to,
-        _csrf: csrfToken,
-      });
-
+    await createAppointment(
+      agent,
+      cookie,
+      date,
+      from,
+      to,
+      "Test for delete",
+      "checking delete"
+    );
     const appointmentId = await parseAppointmentId(agent, cookie);
 
-    res = await agent
+    let res = await agent
       .get(`/appointments/${appointmentId}/edit`)
       .set("Cookie", cookie);
-    csrfToken = extractCsrfToken(res);
+    let csrfToken = extractCsrfToken(res);
 
     const response = await agent
       .delete(`/appointments/${appointmentId}`)

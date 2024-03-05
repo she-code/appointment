@@ -20,6 +20,32 @@ exports.login = async (agent, email, password, cookie) => {
     .set("Cookie", cookie);
 };
 
+//create appointment
+exports.createAppointment = async (
+  agent,
+  cookie,
+  date,
+  from,
+  to,
+  title,
+  description
+) => {
+  let res = await agent
+    .get("/appointments/addAppoinment")
+    .set("Cookie", cookie);
+  let csrfToken = this.extractCsrfToken(res);
+  res = await agent
+    .post("/appointments/createAppointment")
+    .set("Cookie", cookie)
+    .send({
+      title: title,
+      description: description,
+      date: date,
+      from: from,
+      to: to,
+      _csrf: csrfToken,
+    });
+};
 //returns appointment id
 exports.parseAppointmentId = async (agent, cookie) => {
   const groupedResponse = await agent

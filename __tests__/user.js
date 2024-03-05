@@ -88,7 +88,7 @@ describe("Online Appointment Platform", function () {
     res = await agent.get("/signout");
     expect(res.statusCode).toBe(302);
     //based on the app logic
-    //if u r redirected to / user is logged out
+    //if u r redirected to /login user is logged out
     res = await agent.get("/login");
     expect(res.statusCode).toBe(200);
   });

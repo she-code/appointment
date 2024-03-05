@@ -32,11 +32,35 @@ exports.createAppointment = async (req, res) => {
 
     /* Checking if there is an overlapping time. */
     const checkExisitng = getTimeRange(appointExists, from, to);
-
+    //1-2 exisitng
+    //12-2
+    //2-3
+    //2-4
+    //3-5
     /* A function that is used to suggest the nearest time range. */
     const suggestedTime = suggestTime(appointExists, from, to);
 
     if (checkExisitng.length > 0) {
+      // checkExisitng.forEach(doc=>{
+      //   const
+      // })'
+      for (let i = 0; i < checkExisitng.length; i++) {
+        const updatedAppointment = await Appointment.findOne({
+          id: checkExisitng[i].id,
+        });
+        //calc the duration
+        const dur = checkExisitng[i].to - checkExisitng[i].from;
+        console.log(updatedAppointment);
+
+        await updatedAppointment.update(
+          {
+            from: to,
+            to: dur + to,
+          },
+          { new: true }
+        );
+        // const overlappingArr = getTimeRange(appointExists, from, to);
+      }
       req.session.existingData = checkExisitng;
       req.session.formData = {
         title,

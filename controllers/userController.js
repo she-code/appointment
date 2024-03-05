@@ -1,4 +1,5 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
+
 const { User } = require("../models");
 const { createSendToken, generateHashedPassword } = require("../utils/index");
 const AppError = require("../utils/AppError");

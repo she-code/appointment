@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+// eslint-disable-next-line no-unused-vars
 const handleJWTError = () =>
   new AppError("Invalid credential. Please log in again!", 401);
 
@@ -64,7 +65,7 @@ const sendErrorProd = (err, req, res) => {
     msg: "Please try again later.",
   });
 };
-module.exports = (err, req, res, next) => {
+module.exports = (err, req, res) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 

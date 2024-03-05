@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {
   areIntervalsOverlapping,
@@ -92,7 +92,7 @@ exports.createSendToken = (user, req, res) => {
 
   res.cookie("jwt", token, cookieOPtions);
   console.log(user);
-  //redirect to elections page
+  //redirect to appointments page
   res.redirect("/");
 };
 
