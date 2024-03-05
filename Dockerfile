@@ -1,7 +1,6 @@
 FROM --platform=$BUILDPLATFORM node:18.12.0-alpine as base
 WORKDIR /app
 COPY package.json /
-COPY db-config.js ./config/config.js
 EXPOSE 5000
 
 FROM base as production
