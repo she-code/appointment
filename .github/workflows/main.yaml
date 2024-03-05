@@ -76,3 +76,51 @@ jobs:
           target: production
           push: true
           tags: fre123code2/appointment:production
+  error-notification:
+    needs: run-tests
+
+    runs-on: ubuntu-latest
+
+    if: failure()
+
+    steps:
+      - name: Notify on Failure
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          status: ${{ needs.run-tests.result }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: developing
+          SLACK_MESSAGE: |
+            :warning: *Pipeline Failed* :warning:
+
+            Workflow: ${{ github.workflow }}
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+
+            The CI/CD pipeline has failed. Please check the workflow logs for details.
+
+  deploy:
+    needs:
+      - run-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: "${{ secrets.MY_RENDER_SERVICE_ID }}"
+          api-key: "${{ secrets.MY_RENDER_API_KEY }}"
+
+  successful-deployment:
+    needs: deploy
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Slack
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: developing
+          SLACK_MESSAGE: Successfully deployed
