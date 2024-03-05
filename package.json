@@ -8,7 +8,7 @@
     "start": "nodemon -e js,ejs",
     "test": "NODE_ENV=test jest --detectOpenHandles",
     "start:prod": "node index.js",
-    "start:production": "NODE_ENV=production node index.js",
+    "start:production": "npm install && NODE_ENV=production npx sequelize-cli db:migrate node index.js",
     "prepare": "husky install",
     "build": "npm install && NODE_ENV=production npx sequelize-cli db:migrate",
     "lint": "lint-staged"
