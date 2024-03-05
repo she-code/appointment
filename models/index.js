@@ -10,15 +10,25 @@ const config = require(__dirname + "/../config/config.js")[env];
 const db = {};
 
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
+
+if (process.env.NODE_ENV == "production") {
   sequelize = new Sequelize(
-    config.database,
-    config.username,
-    config.password,
+    "appointment_db_oryd",
+    "appointment_db_oryd_user",
+    "Eb7ycXbGrCHyvctZAZ8avsBPJ0t8fcEi@dpg-cnj9hvun7f5s73f7grl0-a",
     config
   );
+} else {
+  if (config.use_env_variable) {
+    sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  } else {
+    sequelize = new Sequelize(
+      config.database,
+      config.username,
+      config.password,
+      config
+    );
+  }
 }
 
 fs.readdirSync(__dirname)
