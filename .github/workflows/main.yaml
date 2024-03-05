@@ -66,9 +66,10 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64 # Adjust based on your platform needs
-          target: production # Specify the target stage
+          platforms: linux/amd64
+          target: production
           push: true
+          tags: Fre123Code2/appointment:production
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
