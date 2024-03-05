@@ -11,6 +11,8 @@ services:
       - 3000:5000
     env_file:
       - .env
+    environment:
+      - NODE_ENV=production
     depends_on:
       - db
   
@@ -24,7 +26,7 @@ services:
       - .env
     environment:
       - POSTGRES_USER=$DB_USERNAME
-      - POSTGRES_DB =$DEVELOPMENT_DB
+      - POSTGRES_DB =$DB_PRODUCTION
       - POSTGRES_PASSWORD=$DB_PASSWORD
 volumes:
   pg-dev-data:
